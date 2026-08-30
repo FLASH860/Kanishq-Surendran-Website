@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kanishqsurendran.com/sitemap.xml
+Sitemap: https://kanishq-surendran.vercel.app/sitemap.xml
