@@ -52,6 +52,12 @@
 </script>
 
 <script src="./support.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.add('dc-ready');
+  });
+  setTimeout(() => { document.body.classList.add('dc-ready'); }, 1500);
+</script>
 </head>
 <body>
 <x-dc>
@@ -67,6 +73,8 @@
 
 <style>
 html, body { margin: 0; scroll-behavior: smooth; }
+body { opacity: 0; }
+body.dc-ready { opacity: 1; transition: opacity 0.2s ease; }
 :root {
   --background: hsl(0 0% 10%);
   --foreground: hsl(0 0% 96%);
