@@ -51,7 +51,7 @@
 }
 </script>
 
-<script src="./support.js"></script>
+<script src="./support.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -63,7 +63,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&amp;display=swap" rel="stylesheet">
-<script src="./image-slot.js"></script>
+<script src="./image-slot.js" defer></script>
 
 <style>
 html, body { margin: 0; scroll-behavior: smooth; }
@@ -137,6 +137,8 @@ a:hover { color: #000; }
 .nav-link-hero:hover { color: #39ff6a !important; text-shadow: 0 0 10px rgba(57,255,106,0.85), 0 0 22px rgba(57,255,106,0.5); }
 .nav-link-scrolled:hover { color: #15BCDF !important; text-shadow: 0 0 10px rgba(21,188,223,0.85), 0 0 22px rgba(21,188,223,0.5); }
 image-slot::part(image) { touch-action: pan-y !important; }
+.reveal-video { opacity: 0; transition: opacity 0.6s ease; }
+.reveal-video.is-visible { opacity: 1; }
 
 </style>
 </helmet>
@@ -173,7 +175,7 @@ image-slot::part(image) { touch-action: pan-y !important; }
 
   <section ref="{{ heroSectionRef }}" style="position: relative; min-height: 100vh; display: flex; align-items: flex-end; background: var(--hero-bg); overflow: hidden;">
     <div style="position: absolute; inset: 0; pointer-events: none;">
-      <video ref="{{ tilesVideoRef }}" src="assets/tiles.mp4" autoplay muted loop playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; filter: brightness(1.6); opacity: 0; transition: opacity 0.6s ease;"></video>
+      <video ref="{{ tilesVideoRef }}" src="assets/tiles.mp4" autoplay muted loop playsinline preload="auto" fetchpriority="high" style="width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; filter: brightness(1.6);"></video>
     </div>
     <div style="position: absolute; inset: 0; z-index: 1; background: rgba(0,0,0,0.3); pointer-events: none;"></div>
 
@@ -248,7 +250,7 @@ image-slot::part(image) { touch-action: pan-y !important; }
 
 <div style="position: relative; overflow: hidden; min-height: clamp(520px,70vh,760px); background: linear-gradient(180deg, #F2F1F0 0%, #F7F6F8 18%, #F7F6F8 100%); display: flex; align-items: center; padding: clamp(60px,10vw,140px) clamp(20px,9vw,118px); font-family: 'Quantico', 'Arial Narrow', sans-serif;">
 
-  <video ref="{{ aboutVideoRef }}" src="assets/globe2.mp4" autoplay muted loop playsinline preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: calc(50% + 80px) center; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;"></video>
+  <video ref="{{ aboutVideoRef }}" src="assets/globe2.mp4" autoplay muted loop playsinline preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: calc(50% + 80px) center; z-index: 0; pointer-events: none;"></video>
 
   <div style="position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, #F2F1F0 0%, #F2F1F0 42%, rgba(242,241,240,0.7) 62%, rgba(242,241,240,0) 85%); pointer-events: none;"></div>
 
@@ -294,7 +296,7 @@ image-slot::part(image) { touch-action: pan-y !important; }
 </div>
 
 <div style="position: relative; overflow: hidden; background: #F2F1F0; padding: clamp(60px,10vw,120px) clamp(20px,9vw,118px); font-family: 'Quantico', 'Arial Narrow', sans-serif;">
-  <video ref="{{ achieveVideoRef }}" src="assets/achieve.mp4" autoplay muted loop playsinline preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s ease;"></video>
+  <video ref="{{ achieveVideoRef }}" src="assets/achieve.mp4" autoplay muted loop playsinline preload="auto" fetchpriority="low" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none;"></video>
   <h2 id="achievements" style="position: relative; z-index: 1; margin: 0 0 clamp(40px,6vw,64px); text-transform: uppercase; font-weight: 700; font-size: clamp(34px,6.5vw,72px); line-height: 0.98; letter-spacing: 0.01em; color: #1a1c1e; scroll-margin-top: 100px;">
     ACHIEVEMENTS
   </h2>
@@ -371,7 +373,7 @@ image-slot::part(image) { touch-action: pan-y !important; }
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { isMobile: false, menuOpen: false, pastHero: false, activeProject: null, techVisible: false, aboutVisible: false, achievementsRow1Visible: false, achievementsRow2Visible: false };
+    this.state = { isMobile: false, menuOpen: false, pastHero: false, activeProject: null, techVisible: false, aboutVisible: false, achievementsRow1Visible: false, achievementsRow2Visible: false, tilesReady: false, heroReady: false, aboutReady: false, achieveReady: false };
     this.techStackRef = React.createRef();
     this.aboutBlockRef = React.createRef();
     this.achievementsRow1Ref = React.createRef();
@@ -420,9 +422,9 @@ class Component extends DCLogic {
       if (p && p.catch) p.catch(() => {});
     };
 
-    const fadeInWhenReady = (video) => {
+    const fadeInWhenReady = (video, key) => {
       if (!video) return;
-      const reveal = () => { video.style.opacity = '1'; };
+      const reveal = () => this.setState({ [key]: true });
       if (video.readyState >= 3) {
         reveal();
       } else {
@@ -430,9 +432,10 @@ class Component extends DCLogic {
         setTimeout(reveal, 1200);
       }
     };
-    [this.tilesVideoRef, this.heroVideoRef, this.aboutVideoRef, this.achieveVideoRef].forEach((ref) => {
-      fadeInWhenReady(ref.current);
-    });
+    fadeInWhenReady(this.tilesVideoRef.current, 'tilesReady');
+    fadeInWhenReady(this.heroVideoRef.current, 'heroReady');
+    fadeInWhenReady(this.aboutVideoRef.current, 'aboutReady');
+    fadeInWhenReady(this.achieveVideoRef.current, 'achieveReady');
     seamlessLoop(this.tilesVideoRef.current, 1);
     seamlessLoop(this.heroVideoRef.current, 0.5);
     seamlessLoop(this.aboutVideoRef.current, 1);
@@ -475,6 +478,8 @@ class Component extends DCLogic {
 
     this._setupContactParticles();
     this._setupProjectsNetwork();
+
+
 
     this._revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -749,6 +754,7 @@ class Component extends DCLogic {
     if (this._onNetworkMove) window.removeEventListener('mousemove', this._onNetworkMove);
     if (this._networkRAF) cancelAnimationFrame(this._networkRAF);
     if (this._revealObserver) this._revealObserver.disconnect();
+
   }
 
   renderVals() {
@@ -759,6 +765,10 @@ class Component extends DCLogic {
       transition: 'color 0.3s ease',
     };
     const navLinkClass = this.state.pastHero ? 'nav-link-scrolled' : 'nav-link-hero';
+    const tilesVideoClass = 'reveal-video' + (this.state.tilesReady ? ' is-visible' : '');
+    const heroVideoRevealClass = 'reveal-video' + (this.state.heroReady ? ' is-visible' : '');
+    const aboutVideoClass = 'reveal-video' + (this.state.aboutReady ? ' is-visible' : '');
+    const achieveVideoClass = 'reveal-video' + (this.state.achieveReady ? ' is-visible' : '');
 
     const techStackStyle = {
       position: 'relative', zIndex: 2,
@@ -844,7 +854,6 @@ class Component extends DCLogic {
     };
     const heroVideoStyle = {
       position: 'absolute', top: 0, height: '100%', width: 'auto', objectFit: 'contain', pointerEvents: 'none', zIndex: 0,
-      opacity: 0, transition: 'opacity 0.6s ease',
       ...(isMobile ? { left: '-120%', height: 'calc(100% / 0.75)', transform: 'scale(0.75)', transformOrigin: 'top left' } : { right: '-12.5%' }),
     };
     const heroScrimStyle = isMobile ? { display: 'none' } : {
@@ -886,6 +895,10 @@ class Component extends DCLogic {
       aboutVideoRef: this.aboutVideoRef,
       tilesVideoRef: this.tilesVideoRef,
       achieveVideoRef: this.achieveVideoRef,
+      tilesVideoClass,
+      heroVideoRevealClass,
+      aboutVideoClass,
+      achieveVideoClass,
       contactCanvasRef: this.contactCanvasRef,
       projectsCanvasRef: this.projectsCanvasRef,
       heroVideoStyle,
